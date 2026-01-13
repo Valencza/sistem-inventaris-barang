@@ -278,5 +278,4 @@ For commercial licensing inquiries, please see
 
 Copyright © 2026 Garcia Fernanda Valenca Archadea
 
-
-```
+---
