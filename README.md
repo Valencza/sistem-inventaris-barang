@@ -1,72 +1,148 @@
-# 📦 Inventory Management System  
+# 📦 Inventory Management System
+
 ### Next.js 15+ • Multi Gudang • RBAC • SEO Ready
 
-**inventory-nextjs-multigudang** adalah aplikasi **Sistem Inventaris modern** berbasis **Next.js App Router** yang dirancang untuk pembelajaran serius sekaligus fondasi project produksi.
+**inventory-nextjs-multigudang** adalah aplikasi **Sistem Inventaris modern berbasis web** untuk mengelola **stok produk multi gudang**, **transfer stok**, serta **kontrol akses berbasis role (RBAC)**.
 
-Aplikasi ini mendukung:
-- Manajemen **stok per gudang**
-- **Transfer stok** dengan status Draft → Posted
-- **Audit log** semua mutasi stok
-- **RBAC (Role Based Access Control)**
-- **Katalog publik SEO-friendly**
+Project ini dirancang sebagai:
+
+* 📚 Project pembelajaran serius
+* 🏗️ Fondasi siap produksi
+* 🌐 Katalog publik SEO-friendly
+
+Dibangun menggunakan **Next.js App Router**, **TypeScript**, **Prisma**, dan **PostgreSQL**.
 
 ---
 
 ## ✨ Fitur Utama
 
 ### 🌍 Publik (SEO Friendly)
-- Katalog produk publik (`/produk`)
-- Filter gudang (`?gudang=KODE`) untuk melihat stok per gudang
-- Detail produk SEO-friendly (`/produk/[slug]`)
-- Rekomendasi *barang sejenis* (kategori sama)
-- Metadata dinamis menggunakan `generateMetadata`
-- Dukungan OpenGraph & SEO sharing
 
-### 🔐 Dashboard (Login Required)
-- **Produk**: CRUD (SKU, slug, harga, minimum stok)
-- **Kategori**: CRUD + slug
-- **Gudang**: CRUD (kode, nama, alamat, PIC)
-- **Stok**:
-  - IN
-  - OUT
-  - ADJUST
-  - Audit trail otomatis
-- **Transfer Stok**:
-  - Draft
-  - Posted (validasi stok + journal log)
-- **RBAC**:
-  - Multi-role per user
-  - Permission-based action (divalidasi di server)
+* Landing page marketing dengan CTA ke login & katalog
+* Katalog produk publik (`/produk`)
+
+  * Search (nama, SKU, deskripsi)
+  * Filter kategori
+  * Filter gudang (`?gudang=KODE`)
+  * Hanya menampilkan produk dengan stok > 0
+* Detail produk SEO-friendly (`/produk/[slug]`)
+
+  * Total stok semua gudang
+  * Stok per gudang aktif
+  * Informasi gudang (alamat, PIC, telepon)
+  * Produk sejenis (kategori sama)
+* Metadata dinamis (`generateMetadata`)
+* OpenGraph & SEO sharing
+* `robots.ts` & `sitemap.ts`
+
+---
+
+### 🔐 Dashboard Internal (Login Required)
+
+#### 📦 Produk
+
+* CRUD Produk
+* SKU unik
+* Slug SEO
+* Harga
+* Minimum stok (low stock detection)
+
+#### 🗂️ Kategori
+
+* CRUD kategori
+* Slug kategori
+
+#### 🏭 Gudang
+
+* CRUD gudang
+* Kode unik
+* Alamat
+* PIC
+* Status aktif / non-aktif
+
+#### 📊 Stok & Movement
+
+* Stok tersimpan **per gudang**
+* Movement otomatis:
+
+  * IN
+  * OUT
+  * ADJUSTMENT
+  * TRANSFER_IN
+  * TRANSFER_OUT
+* Audit trail lengkap:
+
+  * `previousQty → newQty`
+  * Timestamp
+  * User pelaku
+
+#### 🔁 Transfer Stok
+
+| Status    | Deskripsi                          |
+| --------- | ---------------------------------- |
+| Draft     | Data tersimpan, stok belum berubah |
+| Posted    | Validasi stok + mutasi + audit log |
+| Cancelled | Transfer dibatalkan                |
+
+Transfer menggunakan **document-based flow**.
+
+#### 🛡️ RBAC (Role Based Access Control)
+
+* Multi-role per user
+* Permission-based action
+* Validasi dilakukan **di server**
+* Struktur tabel:
+
+  * User
+  * Role
+  * Permission
+  * UserRole
+  * RolePermission
+* Cocok untuk:
+
+  * Admin
+  * Staff Gudang
+  * Supervisor
 
 ---
 
 ## 🏗️ Arsitektur (Standar 2026)
 
-- **Unified Fullstack**
-  - Next.js sebagai UI + Backend Logic
-  - Server Actions sebagai mutation layer
-- **Hybrid Rendering**
-  - Server Components → katalog & list
-  - Client Components → form & interaksi
-- **Type Safety**
-  - Prisma ORM
-  - Zod validation
-- **Database Consistency**
-  - PostgreSQL via Docker Compose
+* **Unified Fullstack**
+
+  * Next.js sebagai UI + Backend
+  * Server Actions & Route Handlers
+* **Hybrid Rendering**
+
+  * Server Components → katalog & list
+  * Client Components → form & interaksi
+* **Type Safety**
+
+  * TypeScript end-to-end
+  * Prisma ORM
+  * Zod validation
+* **Database Consistency**
+
+  * PostgreSQL (Docker / Cloud)
+* **Observability**
+
+  * Vercel Analytics (opsional)
 
 ---
 
 ## 🧰 Tech Stack
 
-- Next.js 15+ (App Router)
-- TypeScript
-- Prisma ORM
-- PostgreSQL 15+
-- Docker Compose
-- Tailwind CSS
-- shadcn/ui
-- Zod
-- Auth.js / NextAuth (Credentials + JWT)
+* Next.js 15 (App Router)
+* React 18 (Server & Client Components)
+* TypeScript
+* Prisma ORM
+* PostgreSQL 15+
+* Tailwind CSS
+* shadcn/ui
+* lucide-react
+* Zod
+* Auth.js / NextAuth (Credentials + JWT)
+* Docker Compose
 
 ---
 
@@ -74,8 +150,8 @@ Aplikasi ini mendukung:
 
 ```text
 ├── prisma/
-│   ├── schema.prisma
-│   └── seed.ts
+│   ├── schema.prisma        # Model database
+│   └── seed.ts              # Seed admin, gudang, dll
 ├── src/
 │   ├── app/
 │   │   ├── (public)/
@@ -85,39 +161,48 @@ Aplikasi ini mendukung:
 │   │   │   └── page.tsx
 │   │   ├── (auth)/
 │   │   │   └── login/page.tsx
-│   │   ├── dashboard/
-│   │   │   ├── _actions/
-│   │   │   ├── _components/
-│   │   │   ├── produk/
-│   │   │   ├── kategori/
-│   │   │   ├── gudang/
+│   │   ├── (dashboard)/
+│   │   │   ├── dashboard/
+│   │   │   │   ├── produk/
+│   │   │   │   ├── kategori/
+│   │   │   │   ├── gudang/
+│   │   │   │   ├── stok/
+│   │   │   │   ├── transfer/
+│   │   │   │   └── page.tsx
+│   │   ├── api/
+│   │   │   ├── public/
+│   │   │   │   ├── produk/
+│   │   │   │   ├── kategori/
+│   │   │   │   ├── gudang/
+│   │   │   │   └── stok/
 │   │   │   ├── stok/
-│   │   │   ├── transfer/
-│   │   │   └── page.tsx
-│   │   ├── api/auth/[...nextauth]/route.ts
+│   │   │   └── stock-movements/
 │   │   ├── robots.ts
 │   │   └── sitemap.ts
 │   ├── components/
 │   ├── lib/
-│   └── services/
+│   ├── services/
 ├── docker-compose.yml
 ├── .env
 └── README.md
-````
+```
 
 ---
 
 ## ✅ Prasyarat
 
+Pastikan environment berikut sudah terpasang:
+
 * Node.js **20+**
 * Docker Desktop
+* PostgreSQL (via Docker atau Cloud)
 * Git
 
 ---
 
-## 🚀 Instalasi & Menjalankan
+## 🚀 Instalasi & Menjalankan Aplikasi
 
-### 1️⃣ Clone & Install
+### 1️⃣ Clone & Install Dependency
 
 ```bash
 git clone https://github.com/Valencza/sistem-inventaris-barang.git
@@ -127,26 +212,24 @@ npm install
 
 ---
 
-### 2️⃣ Konfigurasi `.env`
-
-Buat file `.env` di root project:
+### 2️⃣ Konfigurasi Environment (.env)
 
 ```env
 # Database
-DATABASE_URL="postgresql://USERNAMEMU:PASSWORDMU@localhost:5432/inventory_db?schema=public"
-DIRECT_URL="postgresql://USERNAMEMU:PASSWORDMU@localhost:5432/inventory_db?schema=public"
+DB_USER=usermu
+DB_PASSWORD=passwordmu
+DB_NAME=databasemu
+DB_PORT=5432
 
-DB_USER=admin
-DB_PASSWORD=password
-DB_NAME=inventory_db
+DATABASE_URL="postgresql://usermu:passowrdmu@localhost:5432/databasemu?schema=public"
+DIRECT_URL="postgresql://usermu:passwordmu@localhost:5432/databasemu?schema=public"
+
+REDIS_PASSWORD=password_redismu
+REDIS_PORT=6379
 
 # Auth
-NEXTAUTH_SECRET="random-secret-string"
-
-# Seed admin pertama
-ADMIN_EMAIL="admin@local.test"
-ADMIN_PASSWORD="password-kuat"
-ADMIN_NAME="Administrator"
+JWT_SECRET=super-secret-jwt-key-anda
+JWT_EXPIRES_IN=3600
 ```
 
 > Password admin akan di-hash otomatis saat proses seeding.
@@ -176,64 +259,47 @@ npx prisma db seed
 npm run dev
 ```
 
-Buka: **[http://localhost:3000](http://localhost:3000)**
+---
+
+## 🌐 Akses Aplikasi
+
+* `/` → Landing page publik
+* `/produk` → Katalog produk publik
+* `/login` → Login dashboard
+* `/dashboard/stok` → Manajemen stok (login required)
 
 ---
 
-## 🔐 Login Dashboard
+## 🔁 Alur Data Publik
 
-* URL: `/login`
-* Gunakan akun **admin** dari hasil `prisma db seed`
-* Credential diambil dari file `.env`
+### 📦 Katalog Produk
 
----
+Endpoint publik:
 
-## 🧭 Alur Penggunaan
+* `GET /api/public/produk`
+* `GET /api/public/kategori`
+* `GET /api/public/gudang`
+* `GET /api/public/stok`
 
-### Publik
+Filtering dilakukan di frontend berdasarkan:
 
-1. Buka `/produk`
-2. Pilih gudang
-3. Cari produk
-4. Buka detail produk
-
-### Dashboard
-
-1. Buat gudang
-2. Buat kategori
-3. Buat produk
-4. Input stok awal
-5. Transfer stok antar gudang
+* Search (nama / SKU / deskripsi)
+* Kategori
+* Gudang + stok > 0
 
 ---
 
-## 🔁 Transfer Stok
+### 🧾 Detail Produk
 
-| Status | Deskripsi                                 |
-| ------ | ----------------------------------------- |
-| Draft  | Data tersimpan, stok belum berubah        |
-| Posted | Stok divalidasi & dipindahkan + audit log |
+Endpoint:
 
----
+* `GET /api/public/produk/[slug]`
 
-## 🛡️ RBAC (Role & Permission)
+Fungsi:
 
-* Multi-role per user
-* Permission divalidasi **di server**
-* Cocok untuk:
-
-  * Admin
-  * Staff Gudang
-  * Supervisor
-
----
-
-## 🔍 SEO & Metadata
-
-* Metadata dinamis via `generateMetadata`
-* OpenGraph image support
-* `robots.ts` & `sitemap.ts`
-* Dashboard otomatis non-indexable
+* Menghitung total stok (agregat semua gudang)
+* Menampilkan stok per gudang
+* Deteksi low stock berdasarkan `minStock`
 
 ---
 
@@ -241,41 +307,38 @@ Buka: **[http://localhost:3000](http://localhost:3000)**
 
 ```bash
 npx prisma studio         # GUI database
-docker-compose stop       # Stop database
 npx prisma generate       # Regenerate Prisma Client
-npx prisma migrate reset  # Reset DB
+npx prisma migrate reset  # Reset database
+docker-compose stop       # Stop database
 ```
 
 ---
 
-## 🧱 Catatan Desain Data
+## 🗺️ Roadmap Pengembangan
 
-* Stok disimpan **per gudang**
-* Semua mutasi dicatat ke **audit log**
-* Transfer menggunakan **document-based flow**
-
----
-
-## 🗺️ Roadmap
-
-* Export laporan PDF / Excel
+* Export laporan Excel / PDF
+* Notifikasi stok rendah (email / dashboard)
 * Barcode scanner (SKU)
-* Multi-tenant (per perusahaan)
+* Integrasi POS
+* Multi-tenant (multi perusahaan)
 * Advanced audit log UI
-* Full Text Search (PostgreSQL)
+* Full Text Search PostgreSQL
 
 ---
 
 ## 📄 Lisensi
 
-This project is dual-licensed:
+Project ini menggunakan **dual-license**:
 
-- **MIT License** for personal, educational, and non-commercial use
-- **Commercial License** required for commercial use
+* **MIT License** → Personal, edukasi, dan non-komersial
+* **Commercial License** → Wajib untuk penggunaan komersial
 
-For commercial licensing inquiries, please see  
-[COMMERCIAL_LICENSE.md](./COMMERCIAL_LICENSE.md).
+Detail lisensi komersial tersedia di:
+**[COMMERCIAL_LICENSE.md](./COMMERCIAL_LICENSE.md)**
 
-Copyright © 2026 Garcia Fernanda Valenca Archadea
+---
+
+© 2026 **Garcia Fernanda Valenca Archadea**
+All rights reserved.
 
 ---
